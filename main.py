@@ -19,7 +19,7 @@ def scrape_battle_urls(driver, battle_format):
     driver.find_element_by_xpath("//input[@name='elofilter']").click()
 
     try:
-        soup = BeautifulSoup(driver.page_source)
+        soup = BeautifulSoup(driver.page_source, 'html5lib')
         links = soup.select('a[href^="/battle-"]')
         return list("https://play.pokemonshowdown.com"+link["href"] for link in links)
     finally:
