@@ -4,41 +4,47 @@
 Main
 """
 
-from pprint import pprint
-from selenium import webdriver
-from bs4 import BeautifulSoup
-from driver import DriverWrapper
+from threading import Thread
+from driver import create_driver
 
-def scrape_battle_urls(driver, battle_format):
-    """
-    Scrape urls of battles from https://play.pokemonshowdown.com
-    """
-    driver.get("https://play.pokemonshowdown.com/battles")
-    driver.find_element_by_xpath("//button[@name='selectFormat']").click()
-    driver.find_element_by_xpath("//button[@value='%s']" % battle_format).click()
-    driver.find_element_by_xpath("//input[@name='elofilter']").click()
+def download_battle(battle):
+    """Return function to download a html battle file."""
+    def _():
+        with create_driver(headless=False) as driver:
+            driver.download_battle(battle)
+    return _
 
-    try:
-        soup = BeautifulSoup(driver.page_source, 'html5lib')
-        links = soup.select('a[href^="/battle-"]')
-        return list("https://play.pokemonshowdown.com"+link["href"] for link in links)
-    finally:
-        driver.close()
+def download_battles(battle_urls, thread_numbers):
+    """Download html files concurrently."""
+    def chunked(iterable, block):
+        """iterableをblock個ごとのlistに分割する"""
+        return [iterable[x:x + block] for x in range(0, len(iterable), block)]
+
+    for chunck in chunked(battle_urls[::-1], thread_numbers):
+        threads = []
+        for battle in chunck:
+            threads.append(Thread(target=download_battle(battle)))
+        for thread in threads:
+            thread.start()
+        for thread in threads:
+            thread.join()
+        break
 
 def main():
     """
     Main method.
     """
 
-    options = webdriver.ChromeOptions()
-    options.add_argument('--headless')
-    options.add_argument('--disable-gpu')
-    driver = webdriver.Chrome(chrome_options=options)
-    driver = DriverWrapper(driver)
-
     battle_format = 'gen7vgc2018'
+    thread_numbers = 4
+    battles = []
 
-    return scrape_battle_urls(driver, battle_format)
+    with create_driver() as driver:
+        battles = driver.scrape_battle_urls(battle_format)
+
+    download_battles(battles, thread_numbers)
+
+    return battles
 
 if __name__ == '__main__':
-    pprint(main())
+    main()
