@@ -1,1 +1,1 @@
-docker run --rm -v %cd%:/app -w=/app -it aruzei/chromium_headless python3 main.py
+docker run --rm -v %cd%:/app -w=/app -m 1G -it aruzei/chromium_headless python3 main.py

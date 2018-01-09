@@ -3,12 +3,12 @@
 """
 Web Driver
 """
-
 import os
+import os.path
 from time import sleep
 from contextlib import contextmanager
 from selenium import webdriver
-from selenium.common.exceptions import NoSuchElementException 
+from selenium.common.exceptions import NoSuchElementException
 from bs4 import BeautifulSoup
 
 class DriverWrapper(object):
@@ -26,13 +26,12 @@ class DriverWrapper(object):
                 # prevent driver from becoming unwrapped
                 if result == self.driver:
                     return self
-                self.__post(attr)
+                self._post_command(attr)
                 return result
             return _hooked
-        else:
-            return orig_attr
+        return orig_attr
 
-    def __post(self, attr):
+    def _post_command(self, attr):
         if attr == 'get':
             sleep(10)
         elif attr == 'find_element_by_xpath':
@@ -54,10 +53,18 @@ class DriverWrapper(object):
     def download_battle(self, url):
         """Download battle html. Try 10 times."""
         self.get(url)
+        self.find_element_by_xpath("//button[@name='openSounds']").click()
+        self.find_element_by_xpath("//input[@name='muted']").click()
+
         for _ in range(10):
             try:
-                element = self.find_element_by_partial_link_text("Download")
-                element.click()
+                self.find_element_by_partial_link_text("Download")
+                with open('downloads/'+url.split("/")[-1]+'.html', 'wb') as file:
+                    soup = BeautifulSoup(self.page_source)
+                    log = soup.find(class_='battle-log').prettify()
+
+                    file.write(log.encode())
+                # element.click()
                 return
             except NoSuchElementException:
                 sleep(60)

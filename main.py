@@ -5,12 +5,13 @@ Main
 """
 
 from threading import Thread
+from pprint import pprint
 from driver import create_driver
 
 def download_battle(battle):
     """Return function to download a html battle file."""
     def _():
-        with create_driver(headless=False) as driver:
+        with create_driver(headless=HEADLESS) as driver:
             driver.download_battle(battle)
     return _
 
@@ -28,23 +29,24 @@ def download_battles(battle_urls, thread_numbers):
             thread.start()
         for thread in threads:
             thread.join()
-        break
 
 def main():
     """
     Main method.
     """
-
-    battle_format = 'gen7vgc2018'
-    thread_numbers = 4
     battles = []
 
     with create_driver() as driver:
-        battles = driver.scrape_battle_urls(battle_format)
+        battles = driver.scrape_battle_urls(BATTLE_FORMANT)
 
-    download_battles(battles, thread_numbers)
-
+    download_battles(battles, THREAD_NUMBERS)
     return battles
 
 if __name__ == '__main__':
-    main()
+    
+    BATTLE_FORMANT = 'gen7vgc2018'
+    THREAD_NUMBERS = 4
+    HEADLESS = True
+
+    BATLLES = main()
+    pprint(BATLLES)
