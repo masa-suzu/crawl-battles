@@ -9,7 +9,7 @@
 ```bash
 # Dockerを動作させる環境は前提とする。
 docker build -t ${IMAGENAME} .
-docker run --rm -v ${FULLPATH-to-CurrentDirectory}:/app -w=/app -it $
+docker run --rm -v ${FULLPATH-to-CurrentDirectory}:/app -w=/app --shm-size=2g -it $
 {IMAGENAME} python3 main.py
 ```
 
