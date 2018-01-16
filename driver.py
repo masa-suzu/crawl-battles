@@ -46,7 +46,7 @@ class DriverWrapper(object):
 
         self.find_element_by_xpath("//input[@name='elofilter']")
 
-        soup = BeautifulSoup(self.page_source, "html.parser")
+        soup = BeautifulSoup(self.page_source, "html5lib")
         links = soup.select('a[href^="/battle-"]')
         return list("https://play.pokemonshowdown.com"+link["href"] for link in links)
 
@@ -56,11 +56,11 @@ class DriverWrapper(object):
         self.find_element_by_xpath("//button[@name='openSounds']").click()
         self.find_element_by_xpath("//input[@name='muted']").click()
 
-        for _ in range(10):
+        for _ in range(3):
             try:
                 self.find_element_by_partial_link_text("Download")
                 with open('downloads/'+url.split("/")[-1]+'.html', 'wb') as file:
-                    soup = BeautifulSoup(self.page_source)
+                    soup = BeautifulSoup(self.page_source, "html5lib")
                     log = soup.find(class_='battle-log').prettify()
 
                     file.write(log.encode())
