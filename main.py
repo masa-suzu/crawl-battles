@@ -8,14 +8,14 @@ from threading import Thread
 import zipfile
 import os
 
-from driver import create_driver
-from battle import analyze_log
+from . import driver as Driver
+from . import battle as Battle
 
 
 def download_battle(battle):
     """Return function to download a html battle file."""
     def _():
-        with create_driver(headless=HEADLESS) as driver:
+        with Driver.create_driver() as driver:
             driver.download_battle(battle)
     return _
 
@@ -34,14 +34,14 @@ def download_battles(battle_urls, thread_numbers):
         for thread in threads:
             thread.join()
 
-def main():
+def main(battle_format):
     """
     Main method.
     """
     battles = []
 
-    with create_driver() as driver:
-        battles = driver.scrape_battle_urls(BATTLE_FORMANT)
+    with Driver.create_driver() as driver:
+        battles = driver.scrape_battle_urls(battle_format)
 
     download_battles(battles, THREAD_NUMBERS)
 
@@ -56,11 +56,11 @@ if __name__ == '__main__':
 
     BATTLE_FORMANT = 'gen7vgc2018'
     THREAD_NUMBERS = 4
-    HEADLESS = True
+    # HEADLESS = True
 
-    main()
+    main(BATTLE_FORMANT)
 
     # archive_htmls("{0}_{1:%Y%m%d%H%M}.zip".format(BATTLE_FORMANT, datetime.now()))
     HTMLS = {html for html in os.listdir('./downloads') if 'html' in html}
     for h in HTMLS:
-        print(analyze_log('./downloads/'+ h).serialize())
+        print(Battle.analyze_log('./downloads/'+ h).serialize())
