@@ -1,4 +1,5 @@
 /downloads/*
+!/downloads/.gitkeep
 /__pycache__/*
 /test/__pycache__/*
 debug.log
